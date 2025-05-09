@@ -13,7 +13,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({ className = "" }) => {
   const { userRole, module } = useLocation();
   const { push } = useRouter();
   const onClick = () => {
-    push(`/${userRole}/${module}/settings`);
+    push(`/logout`);
   };
   return (
     <Avatar

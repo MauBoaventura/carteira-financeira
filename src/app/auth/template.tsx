@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@/components/global/theme-toggle";
 import Image from "next/image";
 
 export default function Template({ children }: { children: React.ReactNode }) {
@@ -54,6 +55,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
+      <ThemeToggle/>
     </main>
   );
 }
