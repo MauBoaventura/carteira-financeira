@@ -25,7 +25,7 @@ export default function RoleLayout({
   if (!isClient) return null;
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className="min-h-screen bg-white">
       <Header />
       <SideBar />
       <Content

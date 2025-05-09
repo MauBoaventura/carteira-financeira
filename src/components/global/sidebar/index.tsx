@@ -109,7 +109,7 @@ const SideBar = () => {
           width={250}
           collapsedWidth={80}
           theme={theme === 'dark' ? 'dark' : 'light'}
-          className={`h-screen fixed left-0 top-0 bottom-0 z-[100] shadow-[2px_0_8px_rgba(0,0,0,0.1)] !transition-all duration-300`}
+          className={`h-screen !sticky left-0 top-0 bottom-0 z-[100] shadow-[2px_0_8px_rgba(0,0,0,0.1)] !transition-all duration-300`}
         >
           <div className="p-4 flex items-center justify-center h-16">
             {!collapsedSidebar ? (

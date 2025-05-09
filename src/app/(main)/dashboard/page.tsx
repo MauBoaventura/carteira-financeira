@@ -19,10 +19,9 @@ const Home = () => {
   const { userRole, pathname } = useLocation();
 
   return (
-    <Layout>
-      <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>
+
         <div className="p-6 bg-white rounded-lg">
-          <Title level={4}>Resumo Financeiro</Title>
+          <Title level={3}>Resumo Financeiro</Title>
 
           <Space size="large" className="mt-6">
             <Card style={{ width: 300 }}>
@@ -63,8 +62,7 @@ const Home = () => {
             {/* Aqui você pode adicionar uma tabela de transações recentes */}
           </div>
         </div>
-      </Content>
-    </Layout>
+
   );
 }
 
