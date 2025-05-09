@@ -1,20 +1,20 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import {
-  AppstoreOutlined,
+  DownCircleOutlined,
   CalendarOutlined,
   LinkOutlined,
-  MailOutlined,
-  SettingOutlined,
+  TransactionOutlined,
+  WalletOutlined,
   MenuUnfoldOutlined,
-  MenuFoldOutlined, StarOutlined
+  MenuFoldOutlined, 
+  HomeOutlined,
 } from '@ant-design/icons';
-import { Button, Divider, Drawer, Flex, Menu, Switch } from 'antd';
-import type { MenuProps, MenuTheme } from 'antd/es/menu';
+import { Drawer, Menu } from 'antd';
+import type { MenuProps } from 'antd/es/menu';
 import { useTheme } from 'next-themes';
-import { IApiResponse, IMenuItem } from '@/interfaces/global';
+import { IMenuItem } from '@/interfaces/global';
 import Link from 'next/link';
-import { useLocation } from '@/hooks/use-location';
 import Sider from 'antd/es/layout/Sider';
 import { useConfiguracao } from '@/providers/configuracao-provider/configuracao-provider';
 import Image from 'next/image';
@@ -25,29 +25,11 @@ export type MenuItem = Required<MenuProps>['items'][number];
 
 // Mapeamento de ícones
 export const iconMap: Record<string, React.ReactNode> = {
-  StarOutlined: <StarOutlined />,
-  MailOutlined: <MailOutlined />,
-  CalendarOutlined: <CalendarOutlined />,
-  SettingOutlined: <SettingOutlined />,
-  LinkOutlined: <LinkOutlined />,
-  AppstoreOutlined: <AppstoreOutlined />,
-  MenuUnfoldOutlined: <MenuUnfoldOutlined />,
-  MenuFoldOutlined: <MenuFoldOutlined />,
+  HomeOutlined: <HomeOutlined />,
+  TransactionOutlined: <TransactionOutlined />,
+  WalletOutlined: <WalletOutlined />,
+  DownCircleOutlined: <DownCircleOutlined />,
 };
-const findItem = (items: IMenuItem[], key: string): IMenuItem | undefined => {
-  for (const item of items) {
-    if (item.key === key) {
-      return item;
-    }
-    if (item.children) {
-      const found = findItem(item.children, key);
-      if (found) {
-        return found;
-      }
-    }
-  }
-  return undefined;
-}
 
 const SideBar = () => {
   const { isMobile, mobileMenuVisible, setMobileMenuVisible } = useDeviceType();
@@ -55,7 +37,6 @@ const SideBar = () => {
   const [items, setItems] = useState<MenuItem[]>([])
   const { theme } = useTheme()
   const { collapsedSidebar, setCollapsedSidebar } = useConfiguracao();
-  const { userRole} = useLocation();
   // Função para criar links ou rótulos
   const createLabel = (label: string, path?: string) => {
     if (path) {
@@ -66,7 +47,7 @@ const SideBar = () => {
           </a>
         );
       }
-      return <Link href={`/${userRole}${path}`}>{label}</Link>;
+      return <Link href={`${path}`}>{label}</Link>;
     }
     return label;
   };
@@ -76,7 +57,7 @@ const SideBar = () => {
     const { key, icon, label, children, path } = apiItem;
     return {
       key: `sidebar-${key}`,
-      icon: path ? <Link href={`/${userRole}${path}`}>{icon && iconMap[icon]}</Link> : icon ? iconMap[icon] || null : null,
+      icon: path ? <Link href={`/${path}`}>{icon && iconMap[icon]}</Link> : icon ? iconMap[icon] || null : null,
       label: createLabel(label, path),
       children: children?.map(mapApiToMenuItem),
     } as MenuItem;
@@ -86,6 +67,32 @@ const SideBar = () => {
     setMounted(true)
   }, [])
 
+  useEffect(() => {
+    const menuItems: MenuItem[] = [
+      {
+        key: 'Dashboard',
+        icon: iconMap['HomeOutlined'],
+        label: createLabel('Dashboard', '/'),
+      },
+      {
+        key: 'deposit',
+        icon: iconMap['DownCircleOutlined'],
+        label: createLabel('Depósito', '/deposit'),
+      },
+      {
+        key: 'transfer',
+        icon: iconMap['TransactionOutlined'],
+        label: createLabel('Transferência', '/transfer'),
+      },
+      {
+        key: 'reverse',
+        icon: iconMap['WalletOutlined'],
+        label: createLabel('Reversão de Operação', '/reverse'),
+      },
+    ];
+
+    setItems(menuItems);
+  }, []);
 
   if (!mounted) {
     return null
@@ -106,22 +113,27 @@ const SideBar = () => {
         >
           <div className="p-4 flex items-center justify-center h-16">
             {!collapsedSidebar ? (
-              <Title level={4} className="m-0 text-blue-900 flex items-center gap-2">
+              <Title level={4} className="m-0 text-gray-800 flex items-center gap-2 !transition-all duration-200">
                 <Link href="/">
-                  <Image
-                  src="/assets/icon-atlas.svg"
-                  alt="Next.js logo"
-                  width={80}
-                  height={38}
-                  priority
-                  />
+                  <div className="flex flex-row gap-2 leading-5 ">
+                    <Image
+                      src="/assets/icon-carteira.svg"
+                      alt="Next.js logo"
+                      width={40}
+                      height={38}
+                      priority
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-gray-800 font-bold">Carteira</span>
+                      <span className="text-gray-800 font-bold">VirtuALL</span>
+                    </div>
+                  </div>
                 </Link>
               </Title>
             ) : (
               <Link href="/">
                 <Image
-                  // className="dark:invert"
-                  src="/assets/logo-atlas.svg"
+                  src="/assets/icon-carteira.svg"
                   alt="Next.js logo"
                   width={80}
                   height={38}

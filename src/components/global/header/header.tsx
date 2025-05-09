@@ -42,12 +42,10 @@ export const Header = ({ modules }: Props) => {
             />
           )}
           <Title level={5} className="!m-0 text-blue-100">
-            Painel de Controle
+            Dashboard
           </Title>
         </Space>
         <div className="flex items-center gap-4">
-        <SearchInput />
-        <Notifications />
         <UserAvatar key="header-avatar" className="border-2 border-slate-400" />
         <ThemeToggle />
       </div>
