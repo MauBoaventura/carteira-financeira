@@ -131,6 +131,13 @@ export const LoginForm = () => {
                 Esqueceu sua senha?
               </Button>
             </Link>
+
+            {/* Botão de Registro */}
+            <Link href="/auth/register">
+              <Button variant="outline" className="w-full">
+                Criar uma conta
+              </Button>
+            </Link>
           </div>
         </form>
       </Form>
