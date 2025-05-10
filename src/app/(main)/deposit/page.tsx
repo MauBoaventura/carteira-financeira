@@ -5,6 +5,9 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { useLocation } from '@/hooks/use-location';
+import { DepositService } from "@/services/deposit";
+import { AxiosError } from 'axios';
+import { toast } from 'sonner';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -40,10 +43,25 @@ const DepositPage = () => {
     }
   });
 
-  const onSubmit = (data: DepositFormData) => {
-    console.log("Dados do depósito:", data);
-    message.success(`Depósito de R$ ${data.amount.toFixed(2)} solicitado com sucesso!`);
-    reset();
+  const onSubmit = async (data: DepositFormData) => {
+    try {
+      const response = await DepositService.deposit(data);
+      message.success(`Depósito de R$ ${response.data.deposit.amount.toFixed(2)} realizado com sucesso!`);
+      reset();
+    } catch (err) {
+      let errorMessage = "Ocorreu um erro inesperado";
+
+      if (err instanceof AxiosError) {
+        // Agora TypeScript sabe que err é do tipo AxiosError
+        errorMessage = err.response?.data?.error || err.message || errorMessage;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+
+      toast.error("Erro inesperado", {
+        description: errorMessage,
+      });
+    }
   };
 
   const banks = [
