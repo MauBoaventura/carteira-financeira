@@ -49,7 +49,12 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(deposit, { status: 201 });
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { balance: { increment: parsedBody.amount } },
+    });
+
+    return NextResponse.json({ deposit, updatedBalance: updatedUser.balance }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });

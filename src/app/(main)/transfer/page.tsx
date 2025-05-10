@@ -1,14 +1,26 @@
 'use client'
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Form, Input, Button, Card, Typography, Select, message, Spin, Avatar } from 'antd';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { useLocation } from '@/hooks/use-location';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
+import { toast } from 'sonner';
+import { AxiosError } from 'axios';
+import { TransferService } from '@/services/transfer';
+import { UserService } from '@/services/user';
+import Cookies from 'js-cookie';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string | null;
+};
 
 // Schema de validação com Zod
 const transferSchema = z.object({
@@ -23,18 +35,11 @@ const transferSchema = z.object({
 
 type TransferFormData = z.infer<typeof transferSchema>;
 
-// Mock de dados - substitua por chamadas à API real
-const mockUsers = [
-  { id: '1', name: 'João Silva', email: 'joao@exemplo.com', avatar: null },
-  { id: '2', name: 'Maria Souza', email: 'maria@exemplo.com', avatar: null },
-  { id: '3', name: 'Carlos Oliveira', email: 'carlos@exemplo.com', avatar: null },
-];
-
 const mockBalance = 1500.00; // Saldo mockado - substitua por chamada à API
 
 const TransferPage = () => {
   const [searching, setSearching] = React.useState(false);
-  const [recipientOptions, setRecipientOptions] = React.useState(mockUsers);
+  const [recipientOptions, setRecipientOptions] = React.useState<User[]>([]);
   const [currentBalance, setCurrentBalance] = React.useState(mockBalance);
 
   const {
@@ -49,12 +54,44 @@ const TransferPage = () => {
 
   const amount = watch("amount", 0);
 
+  React.useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await UserService.getAll();
+        setRecipientOptions(response.data);
+      } catch (error) {
+        console.error("Erro ao carregar usuários:", error);
+        toast.error("Erro ao carregar a lista de usuários");
+      }
+    };
+
+    const fetchBalance = async () => {
+      try {
+      const user = JSON.parse(Cookies.get('user') || 'Usuário');
+
+        if (user.id) {
+          const response = await UserService.getById({ id: user.id });
+          setCurrentBalance(response.data.balance);
+        } else {
+          console.error("ID do usuário não encontrado no cookie");
+          toast.error("Erro ao obter o saldo do usuário");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar saldo:", error);
+        toast.error("Erro ao carregar o saldo do usuário");
+      }
+    };
+
+    fetchUsers();
+    fetchBalance();
+  }, []);
+
   const handleSearch = (value: string) => {
     setSearching(true);
     // Simula busca na API
     setTimeout(() => {
-      const filtered = mockUsers.filter(user => 
-        user.name.toLowerCase().includes(value.toLowerCase()) || 
+      const filtered = recipientOptions.filter(user =>
+        user.name.toLowerCase().includes(value.toLowerCase()) ||
         user.email.toLowerCase().includes(value.toLowerCase())
       );
       setRecipientOptions(filtered);
@@ -63,23 +100,30 @@ const TransferPage = () => {
   };
 
   const onSubmit = async (data: TransferFormData) => {
-    // Validação de saldo
-    if (data.amount > currentBalance) {
-      message.error("Saldo insuficiente para realizar a transferência");
-      return;
-    }
-
     try {
-      // Simula chamada à API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Atualiza saldo (em uma aplicação real, isso viria da API)
+      const response = await TransferService.tranfer({
+        amount: data.amount,
+        recipientId: data.recipient,
+        description: data.description,
+      });
+      // Atualiza o saldo local após a transferência
       setCurrentBalance(prev => prev - data.amount);
-      
-      message.success(`Transferência de R$ ${data.amount.toFixed(2)} realizada com sucesso!`);
+      toast.success("Transferência realizada com sucesso!", {
+        description: `Transferência de R$ ${response.data.amount.toFixed(2)} realizada com sucesso!`,
+      });
       reset();
-    } catch (error) {
-      message.error("Ocorreu um erro ao processar a transferência");
+    } catch (err) {
+      let errorMessage = "Ocorreu um erro inesperado";
+      console.error(err);
+      if (err instanceof AxiosError) {
+        errorMessage = err.response?.data?.error || err.message || errorMessage;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+
+      toast.error("Erro inesperado", {
+        description: errorMessage,
+      });
     }
   };
 
@@ -147,10 +191,10 @@ const TransferPage = () => {
                   {recipientOptions.map(user => (
                     <Option key={user.id} value={user.id}>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <Avatar 
-                          src={user.avatar} 
-                          icon={<UserOutlined />} 
-                          size="small" 
+                        <Avatar
+                          src={user.avatar}
+                          icon={<UserOutlined />}
+                          size="small"
                           style={{ marginRight: '8px' }}
                         />
                         <div>
@@ -187,10 +231,10 @@ const TransferPage = () => {
           </Form.Item>
 
           <Form.Item style={{ marginTop: 32 }}>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              block 
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
               size="large"
               loading={isSubmitting}
               disabled={amount > currentBalance}
