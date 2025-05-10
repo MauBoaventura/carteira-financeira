@@ -1,10 +1,8 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -13,9 +11,66 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
-  email    String   @unique
-  name     String
-  password String
-  createdAt DateTime @default(now())
+  id                String     @id @default(uuid())
+  email             String     @unique
+  name              String
+  password          String
+  balance           Float      @default(0)
+  createdAt         DateTime   @default(now())
+
+  deposits          Deposit[]  @relation("UserDeposits")
+  receivedTransfers Transfer[] @relation("UserTransfers")
+  sentTransfers     Transfer[] @relation("TransferSender")
+  reversals         Reversal[] @relation("UserReversals")
+}
+
+model Deposit {
+  id           String     @id @default(uuid())
+  amount       Float
+  bank         String
+  accountType  AccountType
+  reference    String?
+  createdAt    DateTime   @default(now())
+
+  userId       String
+  user         User       @relation("UserDeposits", fields: [userId], references: [id])
+
+  reversed     Boolean    @default(false)
+  Reversal     Reversal[]
+}
+
+model Transfer {
+  id           String     @id @default(uuid())
+  amount       Float
+  description  String?
+  createdAt    DateTime   @default(now())
+
+  senderId     String
+  sender       User       @relation("TransferSender", fields: [senderId], references: [id])
+
+  recipientId  String
+  recipient    User       @relation("UserTransfers", fields: [recipientId], references: [id])
+
+  reversed     Boolean    @default(false)
+  Reversal     Reversal[]
+}
+
+model Reversal {
+  id          String     @id @default(uuid())
+  reason      String
+  createdAt   DateTime   @default(now())
+
+  userId      String
+  user        User       @relation("UserReversals", fields: [userId], references: [id])
+
+  depositId   String?    @unique
+  deposit     Deposit?   @relation(fields: [depositId], references: [id])
+
+  transferId  String?    @unique
+  transfer    Transfer?  @relation(fields: [transferId], references: [id])
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
 }

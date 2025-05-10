@@ -1,8 +1,8 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
 export const axiosApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
-
   headers: {
     "Content-Type": "application/json",
   },
@@ -10,21 +10,13 @@ export const axiosApi = axios.create({
 
 axiosApi.interceptors.request.use(
   (config) => {
-    // console.log('Request:', config)
-    // let token
+    const token = Cookies.get("token"); // Substitua "token" pelo nome real da sua chave no cookie
 
-    // const localToken = localStorage.getItem(localStorageToken)
-
-    // if (localToken) {
-    //   token = localToken.replaceAll('"', '')
-    // }
-
-    // if (token && config.headers !== undefined) {
-    //   config.headers.Authorization = `Bearer ${token}`
-    // }
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
     return config;
   },
-
   (error) => Promise.reject(error)
 );

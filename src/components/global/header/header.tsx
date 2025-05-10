@@ -13,6 +13,7 @@ import { CloseOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined } fro
 import Title from "antd/es/typography/Title";
 import { useLocation } from "@/hooks";
 import { UserRoles } from "@/lib/enums";
+import Cookies from 'js-cookie';
 
 interface Props {
   modules?: string[];
@@ -24,6 +25,7 @@ export const Header = ({ modules }: Props) => {
   const { collapsedSidebar, setCollapsedSidebar } = useConfiguracao()
   const { theme } = useTheme()
   const { userRole } = useLocation()
+  const userName = JSON.parse(Cookies.get('user') || 'Usuário');
 
 
 
@@ -59,6 +61,10 @@ export const Header = ({ modules }: Props) => {
         </Title>
       </Space>
       <div className="flex items-center gap-4">
+
+        <span className="text-sm font-medium text-gray-700">
+          {userName.name}
+        </span>
         <UserAvatar key="header-avatar" className="border-2 border-slate-400" />
         <ThemeToggle />
       </div>
