@@ -14,4 +14,8 @@ export class ReverseService {
     const url = baseUrlReverse;
     return axiosApi.get(url);
   }
+  static async reverseById(operationId: string): Promise<AxiosResponse<void>> {
+    const url = `${baseUrlReverse}/${operationId}`;
+    return axiosApi.post(url);
+  }
 }

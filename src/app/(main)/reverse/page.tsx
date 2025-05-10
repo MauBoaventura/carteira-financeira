@@ -39,7 +39,6 @@ const transformReverseResponseToOperation = (data: ReverseResponse[]): Operation
 };
 
 const ReversalPage = () => {
-  const { userRole } = useLocation();
   const [operations, setOperations] = useState<Operation[]>([]);
   const [filteredOperations, setFilteredOperations] = useState<Operation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -47,6 +46,32 @@ const ReversalPage = () => {
     dateRange: null as [dayjs.Dayjs, dayjs.Dayjs] | null,
     searchText: '',
   });
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
+
+  const showModal = (operationId: string) => {
+    setSelectedOperationId(operationId);
+    setModalVisible(true);
+  };
+
+  const handleConfirmReversal = async () => {
+    if (selectedOperationId) {
+      await performReversal(selectedOperationId);
+      setModalVisible(false);
+      setSelectedOperationId(null);
+      // mudar o status da operação na lista local
+      setOperations(prev => prev.map(op =>
+        op.id === selectedOperationId ? { ...op, status: 'REVERSED', reversible: false } : op
+      ));
+      filterOperations(); // Reaplica os filtros
+    }
+  };
+
+  const handleCancelReversal = () => {
+    setModalVisible(false);
+    setSelectedOperationId(null);
+  };
 
   useEffect(() => {
     const fetchOperations = async () => {
@@ -68,12 +93,15 @@ const ReversalPage = () => {
   }, []);
 
   useEffect(() => {
+    if (!operations.length) return;
     // Simula carregamento de dados
     setLoading(true);
     setTimeout(() => {
       filterOperations();
       setLoading(false);
-    }, 500);
+    }, 50000);
+
+
   }, [searchParams]);
 
   const filterOperations = () => {
@@ -101,6 +129,27 @@ const ReversalPage = () => {
     setFilteredOperations(result);
   };
 
+  const performReversal = async (operationId: string) => {
+    setLoading(true);
+    try {
+      // Chama o serviço para reverter a operação
+      await ReverseService.reverseById(operationId);
+
+      // Atualiza o status na lista local com base na resposta da API
+      setOperations(prev => prev.map(op => 
+        op.id === operationId ? { ...op, status: 'REVERSED', reversible: false } : op
+      ));
+
+      toast.success('Operação revertida com sucesso!');
+      filterOperations(); // Reaplica os filtros
+    } catch (error) {
+      console.error('Erro ao reverter operação:', error);
+      toast.error('Falha ao reverter operação');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleReverseOperation = (operationId: string) => {
     confirm({
       title: 'Confirmar reversão',
@@ -110,26 +159,6 @@ const ReversalPage = () => {
       cancelText: 'Cancelar',
       onOk: () => performReversal(operationId),
     });
-  };
-
-  const performReversal = async (operationId: string) => {
-    setLoading(true);
-    try {
-      // Simula chamada à API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Atualiza o status na lista local (em produção, atualizar com resposta da API)
-      setOperations(prev => prev.map(op => 
-        op.id === operationId ? { ...op, status: 'REVERSED', reversible: false } : op
-      ));
-      
-      toast.success('Operação revertida com sucesso!');
-      filterOperations(); // Reaplica os filtros
-    } catch (error) {
-      toast.error('Falha ao reverter operação');
-    } finally {
-      setLoading(false);
-    }
   };
 
   const columns = [
@@ -192,7 +221,7 @@ const ReversalPage = () => {
           <Button
             type="link"
             icon={<UndoOutlined />}
-            onClick={() => handleReverseOperation(record.id)}
+            onClick={() => showModal(record.id)}
             disabled={!record.reversible}
             title={record.reversible ? 'Reverter operação' : 'Operação não pode ser revertida'}
           >
@@ -252,6 +281,18 @@ const ReversalPage = () => {
           />
         </Spin>
       </Card>
+
+      <Modal
+        title="Confirmar Reversão"
+        open={modalVisible}
+        onOk={handleConfirmReversal}
+        onCancel={handleCancelReversal}
+        okText="Confirmar"
+        cancelText="Cancelar"
+        confirmLoading={loading}
+      >
+        <p>Tem certeza que deseja reverter esta operação? Esta ação não pode ser desfeita.</p>
+      </Modal>
 
       <div className="mt-6 p-4 bg-gray-100 rounded-lg">
         <Title level={5} className="mb-2">Sobre a reversão de operações</Title>
