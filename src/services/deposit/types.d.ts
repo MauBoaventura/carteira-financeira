@@ -24,7 +24,7 @@ export interface Deposit {
   amount: number
   bank: string
   accountType: string
-  reference: any
+  reference: string
   createdAt: string
   userId: string
   reversed: boolean

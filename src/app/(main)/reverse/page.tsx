@@ -1,9 +1,13 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Typography, Button, Modal, message, Tag, Space, Spin, DatePicker, Input } from 'antd';
+import { Table, Card, Typography, Button, Modal, Tag, Space, Spin, DatePicker, Input } from 'antd';
 import { ExclamationCircleOutlined, UndoOutlined, SearchOutlined } from '@ant-design/icons';
 import { useLocation } from '@/hooks/use-location';
+import { ReverseService } from '@/services/reverse';
+import { ReverseResponse } from '@/services/reverse/types';
 import dayjs from 'dayjs';
+import { User } from '@prisma/client';
+import { toast } from 'sonner';
 
 const { Title, Text } = Typography;
 const { confirm } = Modal;
@@ -16,52 +20,52 @@ type Operation = {
   amount: number;
   date: string;
   status: 'COMPLETED' | 'FAILED' | 'REVERSED' | 'PENDING';
-  counterparty?: string;
+  counterparty?: User;
   description?: string;
   reversible: boolean;
 };
 
-const mockOperations: Operation[] = [
-  {
-    id: '1',
-    type: 'TRANSFER',
-    amount: 150.50,
-    date: '2023-05-15T10:30:00',
-    status: 'COMPLETED',
-    counterparty: 'João Silva',
-    description: 'Pagamento de serviços',
-    reversible: true
-  },
-  {
-    id: '2',
-    type: 'DEPOSIT',
-    amount: 500.00,
-    date: '2023-05-14T09:15:00',
-    status: 'COMPLETED',
-    description: 'Depósito inicial',
-    reversible: true
-  },
-  {
-    id: '3',
-    type: 'TRANSFER',
-    amount: 200.00,
-    date: '2023-05-10T14:45:00',
-    status: 'REVERSED',
-    counterparty: 'Maria Souza',
-    description: 'Transferência errada',
-    reversible: false
-  },
-];
+
+const transformReverseResponseToOperation = (data: ReverseResponse[]): Operation[] => {
+  return data.map(item => ({
+    id: item.id,
+    type: item.type,
+    amount: item.amount,
+    date: item.date,
+    counterparty: item.counterparty || undefined,
+    status: item.status,
+    reversible: item.reversible,
+  }));
+};
 
 const ReversalPage = () => {
   const { userRole } = useLocation();
-  const [operations, setOperations] = useState<Operation[]>(mockOperations);
-  const [filteredOperations, setFilteredOperations] = useState<Operation[]>(mockOperations);
+  const [operations, setOperations] = useState<Operation[]>([]);
+  const [filteredOperations, setFilteredOperations] = useState<Operation[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useState({
     dateRange: null as [dayjs.Dayjs, dayjs.Dayjs] | null,
     searchText: '',
   });
+
+  useEffect(() => {
+    const fetchOperations = async () => {
+      setLoading(true);
+      try {
+        const response = await ReverseService.getAll();
+        const transformedData = transformReverseResponseToOperation(response.data);
+        setOperations(transformedData);
+        setFilteredOperations(transformedData);
+      } catch (error) {
+        console.error("Erro ao carregar operações:", error);
+        toast.error("Erro ao carregar a lista de operações");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOperations();
+  }, []);
 
   useEffect(() => {
     // Simula carregamento de dados
@@ -89,7 +93,7 @@ const ReversalPage = () => {
       const searchText = searchParams.searchText.toLowerCase();
       result = result.filter(op => 
         op.id.toLowerCase().includes(searchText) ||
-        (op.counterparty && op.counterparty.toLowerCase().includes(searchText)) ||
+        (op.counterparty && op.counterparty?.name.toLowerCase().includes(searchText)) ||
         (op.description && op.description.toLowerCase().includes(searchText))
       );
     }
@@ -119,10 +123,10 @@ const ReversalPage = () => {
         op.id === operationId ? { ...op, status: 'REVERSED', reversible: false } : op
       ));
       
-      message.success('Operação revertida com sucesso!');
+      toast.success('Operação revertida com sucesso!');
       filterOperations(); // Reaplica os filtros
     } catch (error) {
-      message.error('Falha ao reverter operação');
+      toast.error('Falha ao reverter operação');
     } finally {
       setLoading(false);
     }
@@ -133,7 +137,6 @@ const ReversalPage = () => {
       title: 'ID',
       dataIndex: 'id',
       key: 'id',
-      width: 100,
     },
     {
       title: 'Tipo',
@@ -165,7 +168,7 @@ const ReversalPage = () => {
       title: 'Contraparte',
       dataIndex: 'counterparty',
       key: 'counterparty',
-      render: (counterparty: string) => counterparty || '-',
+      render: (counterparty: User) => counterparty?.name || '-',
     },
     {
       title: 'Status',
