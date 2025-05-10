@@ -29,7 +29,6 @@ export async function removeTokenCookie() {
 export async function verifyToken(token: string): Promise<string | null> {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-    console.log("decoded", decoded);
     return typeof decoded === "object" && "userId" in decoded ? decoded.userId : null;
   } catch (error) {
     console.error("Token verification failed:", error);

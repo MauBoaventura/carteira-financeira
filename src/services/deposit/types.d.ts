@@ -7,10 +7,16 @@ export interface DepositProps {
 }
 
 export interface DepositResponse {
-  deposit: DepositProps;
-  user: User;
-  reversal?: Reversal[];
+  id: string
+  amount: number
+  bank: string
+  accountType: AccountType
+  reference: string
+  createdAt: string
+  userId: string
+  reversed: boolean
 }
+
 
 export type AccountType = 'SAVINGS' | 'CHECKING'; // Replace with actual enum values if available
 

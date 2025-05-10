@@ -46,11 +46,13 @@ const DepositPage = () => {
   const onSubmit = async (data: DepositFormData) => {
     try {
       const response = await DepositService.deposit(data);
-      message.success(`Depósito de R$ ${response.data.deposit.amount.toFixed(2)} realizado com sucesso!`);
+      toast.success("Depósito realizado com sucesso!", {
+        description: `Depósito de R$ ${response.data.amount.toFixed(2)} realizado com sucesso!`,
+      });
       reset();
     } catch (err) {
       let errorMessage = "Ocorreu um erro inesperado";
-
+      console.error(err);
       if (err instanceof AxiosError) {
         // Agora TypeScript sabe que err é do tipo AxiosError
         errorMessage = err.response?.data?.error || err.message || errorMessage;
