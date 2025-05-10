@@ -11,41 +11,54 @@ import { ThemeToggle } from "../theme-toggle";
 import { Avatar, Button, Space } from "antd";
 import { CloseOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined } from "@ant-design/icons";
 import Title from "antd/es/typography/Title";
+import { useLocation } from "@/hooks";
+import { UserRoles } from "@/lib/enums";
 
 interface Props {
   modules?: string[];
 }
 
+
 export const Header = ({ modules }: Props) => {
-    const { isMobile, mobileMenuVisible, setMobileMenuVisible} = useDeviceType()
-    const { collapsedSidebar, setCollapsedSidebar } = useConfiguracao()
-    const { theme } = useTheme()
-    
+  const { isMobile, mobileMenuVisible, setMobileMenuVisible } = useDeviceType()
+  const { collapsedSidebar, setCollapsedSidebar } = useConfiguracao()
+  const { theme } = useTheme()
+  const { userRole } = useLocation()
+
+
+
+  // Atualizando o mapeamento de títulos para retornar o nome salvo como valor
+  const titles: Record<UserRoles, string> = {
+    [UserRoles.DASHBOARD]: 'Dashboard',
+    [UserRoles.DEPOSIT]: 'Depósito',
+    [UserRoles.REVERSE]: 'Reversão de Operação',
+    [UserRoles.TRANSFER]: 'Transferência',
+  };
+
   return (
     <header
       id="header"
-      className={`fixed top-0 z-[100] flex h-16 w-full items-center justify-between shadow-md transition-all duration-300 ${
-        theme === 'dark' ? 'bg-[#001529]' : '!bg-white'
-      } ${!isMobile && !collapsedSidebar ? 'pl-[260px]' : !isMobile ? 'pl-[90px]' : ''} px-4`}>
-         <Space className='flex items-center'>
-          {isMobile ? (
-            <Button
-              type="text"
-              icon={mobileMenuVisible ? <CloseOutlined /> : <MenuUnfoldOutlined />}
-              onClick={() => setMobileMenuVisible(!mobileMenuVisible)}
-            />
-          ) : (
-            <Button
-              type="text"
-              icon={collapsedSidebar ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsedSidebar(!collapsedSidebar)}
-            />
-          )}
-          <Title level={5} className="!m-0 text-blue-100">
-            Dashboard
-          </Title>
-        </Space>
-        <div className="flex items-center gap-4">
+      className={`fixed top-0 z-[100] flex h-16 w-full items-center justify-between shadow-md transition-all duration-300 ${theme === 'dark' ? 'bg-[#001529]' : '!bg-white'
+        } ${!isMobile && !collapsedSidebar ? 'pl-[260px]' : !isMobile ? 'pl-[90px]' : ''} px-4`}>
+      <Space className='flex items-center'>
+        {isMobile ? (
+          <Button
+            type="text"
+            icon={mobileMenuVisible ? <CloseOutlined /> : <MenuUnfoldOutlined />}
+            onClick={() => setMobileMenuVisible(!mobileMenuVisible)}
+          />
+        ) : (
+          <Button
+            type="text"
+            icon={collapsedSidebar ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsedSidebar(!collapsedSidebar)}
+          />
+        )}
+        <Title level={5} className="!m-0 text-blue-100">
+          {titles[userRole as UserRoles] || "Carteira VirtuALL"}
+        </Title>
+      </Space>
+      <div className="flex items-center gap-4">
         <UserAvatar key="header-avatar" className="border-2 border-slate-400" />
         <ThemeToggle />
       </div>

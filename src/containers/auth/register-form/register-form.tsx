@@ -9,10 +9,11 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { setUserCookie } from "@/lib/actions";
 import { authConstants } from "@/lib/constants";
 import { RegisterPayload } from "@/lib/types";
+import { AuthService } from "@/services/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AxiosError } from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -55,12 +56,43 @@ export const RegisterForm = () => {
   });
 
   const onSubmit = async (data: RegisterPayload) => {
+    try {
+      const response = await AuthService.register({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        passwordConfirmation: data.passwordConfirmation,
+      })
+      if (!response.status.toString().startsWith("2")) {
+        const error = await response.data
+        toast.error("Erro ao registrar usuário", {
+          description: error.error || "Tente novamente mais tarde",
+        });
+        return;
+      }
 
-    router.push('/auth/login');
-    toast.success("Usuário registrado com sucesso", {
-      description: "Você pode fazer login agora",
-    });
+      toast.success("Usuário registrado com sucesso", {
+        description: "Você pode fazer login agora",
+      });
+
+      router.push('/auth/login');
+    } catch (err) {
+      console.error(err);
+      let errorMessage = "Ocorreu um erro inesperado";
+
+      if (err instanceof AxiosError) {
+        // Agora TypeScript sabe que err é do tipo AxiosError
+        errorMessage = err.response?.data?.error || err.message || errorMessage;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+
+      toast.error("Erro inesperado", {
+        description: errorMessage,
+      });
+    }
   };
+
 
   return (
     <AuthCard>
