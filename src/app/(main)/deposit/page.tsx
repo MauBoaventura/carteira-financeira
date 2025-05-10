@@ -47,7 +47,7 @@ const DepositPage = () => {
     try {
       const response = await DepositService.deposit(data);
       toast.success("Depósito realizado com sucesso!", {
-        description: `Depósito de R$ ${response.data.amount.toFixed(2)} realizado com sucesso!`,
+        description: `Depósito de R$ ${response.data.deposit.amount.toFixed(2)} realizado com sucesso!`,
       });
       reset();
     } catch (err) {

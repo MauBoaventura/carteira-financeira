@@ -1,6 +1,6 @@
 'use client'
 import React, { useMemo } from 'react';
-import { Form, Input, Button, Card, Typography, Select, message, Spin, Avatar } from 'antd';
+import { Form, Input, Button, Card, Typography, Select, message, Spin, Avatar, Skeleton } from 'antd';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
@@ -41,6 +41,7 @@ const TransferPage = () => {
   const [searching, setSearching] = React.useState(false);
   const [recipientOptions, setRecipientOptions] = React.useState<User[]>([]);
   const [currentBalance, setCurrentBalance] = React.useState(mockBalance);
+  const [loadingBalance, setLoadingBalance] = React.useState(true);
 
   const {
     control,
@@ -58,7 +59,7 @@ const TransferPage = () => {
     const fetchUsers = async () => {
       try {
         const response = await UserService.getAll();
-        setRecipientOptions(response.data);
+        setRecipientOptions(response.data.filter(user => user.id !== JSON.parse(Cookies.get('user') || '{}').id));
       } catch (error) {
         console.error("Erro ao carregar usuários:", error);
         toast.error("Erro ao carregar a lista de usuários");
@@ -67,18 +68,18 @@ const TransferPage = () => {
 
     const fetchBalance = async () => {
       try {
-      const user = JSON.parse(Cookies.get('user') || 'Usuário');
+        const user = JSON.parse(Cookies.get('user') || '{}');
 
         if (user.id) {
           const response = await UserService.getById({ id: user.id });
           setCurrentBalance(response.data.balance);
         } else {
-          console.error("ID do usuário não encontrado no cookie");
-          toast.error("Erro ao obter o saldo do usuário");
+          toast.error("ID do usuário não encontrado no cookie");
         }
       } catch (error) {
-        console.error("Erro ao carregar saldo:", error);
         toast.error("Erro ao carregar o saldo do usuário");
+      } finally {
+        setLoadingBalance(false);
       }
     };
 
@@ -133,9 +134,13 @@ const TransferPage = () => {
       <Text type="secondary">Envie dinheiro para outros usuários do sistema</Text>
       <div className="my-6 p-4 bg-gray-100 rounded-lg">
         <Text strong>Saldo disponível: </Text>
-        <Text className="text-lg text-blue-500">
-          R$ {currentBalance.toFixed(2)}
-        </Text>
+        {loadingBalance ? (
+          <Skeleton.Input active style={{ width: 40, height: 24 }} />
+        ) : (
+          <Text className="text-lg text-blue-500">
+            R$ {currentBalance.toFixed(2)}
+          </Text>
+        )}
       </div>
 
       <Card style={{ marginTop: 16, maxWidth: 600 }}>
