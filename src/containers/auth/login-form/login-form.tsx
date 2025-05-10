@@ -9,10 +9,11 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { setUserCookie } from "@/lib/actions";
 import { authConstants } from "@/lib/constants";
 import { LoginPayload } from "@/lib/types";
+import { AuthService } from "@/services/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AxiosError } from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -39,16 +40,33 @@ export const LoginForm = () => {
   });
 
   const onSubmit = async (data: LoginPayload) => {
-    const isAuthorized = await setUserCookie(data);
+    try {
+      const response = await AuthService.login({
+        email: data.email,
+        password: data.password,
+      });
 
-    if (isAuthorized) {
-      router.push(authConstants.loginSuccessRedirect);
-      return;
+      if (response.status === 200) {
+        router.push('/dashboard');
+      } else {
+        toast.error('Erro', {
+          description: response.data.error || 'Usuário ou senha inválidos',
+        });
+      }
+    } catch (err) {
+      let errorMessage = "Ocorreu um erro inesperado";
+
+      if (err instanceof AxiosError) {
+        // Agora TypeScript sabe que err é do tipo AxiosError
+        errorMessage = err.response?.data?.error || err.message || errorMessage;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+
+      toast.error("Erro inesperado", {
+        description: errorMessage,
+      });
     }
-
-    toast.error("Erro", {
-      description: "Usuário ou senha inválidos",
-    });
   };
 
   return (

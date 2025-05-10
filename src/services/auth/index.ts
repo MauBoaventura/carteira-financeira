@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AxiosResponse } from "axios";
-import { LoginProps, RegisterProps, User } from "./types";
+import { LoginProps, RegisterProps, User, LoginResponse } from "./types";
 import { axiosApi } from "..";
 
 const baseUrlVeiculo = "/auth";
@@ -10,7 +10,7 @@ export class AuthService {
     const url = baseUrlVeiculo;
     return axiosApi.get(url);
   }
-  static async login(data: LoginProps): Promise<AxiosResponse<User>> {
+  static async login(data: LoginProps): Promise<AxiosResponse<LoginResponse>> {
     const url = baseUrlVeiculo + "/login";
     return axiosApi.post(url, data);
   }

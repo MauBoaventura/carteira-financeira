@@ -3,7 +3,7 @@ import { validateUserCookie } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const userCookie = request.cookies.get(authConstants.userPrefix);
+  const userCookie = request.cookies.get('user');
   const isHome = request.nextUrl.pathname === "/";
   const isLogout = request.nextUrl.pathname === "/logout";
 
@@ -11,7 +11,8 @@ export function middleware(request: NextRequest) {
   
   if (isLogout) {
     const response = NextResponse.redirect(new URL("/auth/login", request.url));
-    response.cookies.delete(authConstants.userPrefix);
+    response.cookies.delete('user');
+    response.cookies.delete('token');
     return response;
   }
 

@@ -1,16 +1,16 @@
-import axios from 'axios'
+import axios from "axios";
 
 export const axiosApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
 
   headers: {
-    'Content-Type': 'application/json'
-  }
-})
+    "Content-Type": "application/json",
+  },
+});
 
 axiosApi.interceptors.request.use(
   (config) => {
-    console.log('Request:', config)
+    // console.log('Request:', config)
     // let token
 
     // const localToken = localStorage.getItem(localStorageToken)
@@ -23,8 +23,8 @@ axiosApi.interceptors.request.use(
     //   config.headers.Authorization = `Bearer ${token}`
     // }
 
-    return config
+    return config;
   },
 
   (error) => Promise.reject(error)
-)
+);
