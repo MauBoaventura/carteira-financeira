@@ -42,6 +42,7 @@ const TransferPage = () => {
   const [recipientOptions, setRecipientOptions] = React.useState<User[]>([]);
   const [currentBalance, setCurrentBalance] = React.useState(mockBalance);
   const [loadingBalance, setLoadingBalance] = React.useState(true);
+  const [loadingRecipients, setLoadingRecipients] = React.useState(true);
 
   const {
     control,
@@ -63,6 +64,8 @@ const TransferPage = () => {
       } catch (error) {
         console.error("Erro ao carregar usuários:", error);
         toast.error("Erro ao carregar a lista de usuários");
+      } finally {
+        setLoadingRecipients(false);
       }
     };
 
@@ -144,110 +147,114 @@ const TransferPage = () => {
       </div>
 
       <Card style={{ marginTop: 16, maxWidth: 600 }}>
-        <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-          {/* Campo Valor */}
-          <Form.Item
-            label="Valor da Transferência (R$)"
-            validateStatus={errors.amount ? "error" : ""}
-            help={errors.amount?.message}
-          >
-            <Controller
-              name="amount"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  type="number"
-                  step="0.01"
-                  min="1"
-                  max="5000"
-                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                  placeholder="Ex: 150,50"
-                />
-              )}
-            />
-            {amount > 0 && amount > currentBalance && (
-              <Text type="danger" style={{ display: 'block', marginTop: '4px' }}>
-                Saldo insuficiente
-              </Text>
-            )}
-          </Form.Item>
-
-          {/* Campo Destinatário */}
-          <Form.Item
-            label="Destinatário"
-            validateStatus={errors.recipient ? "error" : ""}
-            help={errors.recipient?.message}
-          >
-            <Controller
-              name="recipient"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  showSearch
-                  placeholder="Busque por nome ou email"
-                  defaultActiveFirstOption={false}
-                  filterOption={false}
-                  onSearch={handleSearch}
-                  notFoundContent={searching ? <Spin size="small" /> : null}
-                  optionFilterProp="children"
-                >
-                  {recipientOptions.map(user => (
-                    <Option key={user.id} value={user.id}>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <Avatar
-                          src={user.avatar}
-                          icon={<UserOutlined />}
-                          size="small"
-                          style={{ marginRight: '8px' }}
-                        />
-                        <div>
-                          <div>{user.name}</div>
-                          <Text type="secondary" style={{ fontSize: '12px' }}>{user.email}</Text>
-                        </div>
-                      </div>
-                    </Option>
-                  ))}
-                </Select>
-              )}
-            />
-          </Form.Item>
-
-          {/* Campo Descrição (Opcional) */}
-          <Form.Item
-            label="Descrição (Opcional)"
-            validateStatus={errors.description ? "error" : ""}
-            help={errors.description?.message}
-          >
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <Input.TextArea
-                  {...field}
-                  rows={3}
-                  placeholder="Ex: Pagamento pelo serviço prestado"
-                  maxLength={100}
-                  showCount
-                />
-              )}
-            />
-          </Form.Item>
-
-          <Form.Item style={{ marginTop: 32 }}>
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              size="large"
-              loading={isSubmitting}
-              disabled={amount > currentBalance}
+        {loadingRecipients ? (
+          <Skeleton active paragraph={{ rows: 4 }} />
+        ) : (
+          <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+            {/* Campo Valor */}
+            <Form.Item
+              label="Valor da Transferência (R$)"
+              validateStatus={errors.amount ? "error" : ""}
+              help={errors.amount?.message}
             >
-              {isSubmitting ? 'Processando...' : 'Confirmar Transferência'}
-            </Button>
-          </Form.Item>
-        </Form>
+              <Controller
+                name="amount"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    max="5000"
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    placeholder="Ex: 150,50"
+                  />
+                )}
+              />
+              {amount > 0 && amount > currentBalance && (
+                <Text type="danger" style={{ display: 'block', marginTop: '4px' }}>
+                  Saldo insuficiente
+                </Text>
+              )}
+            </Form.Item>
+
+            {/* Campo Destinatário */}
+            <Form.Item
+              label="Destinatário"
+              validateStatus={errors.recipient ? "error" : ""}
+              help={errors.recipient?.message}
+            >
+              <Controller
+                name="recipient"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    showSearch
+                    placeholder="Busque por nome ou email"
+                    defaultActiveFirstOption={false}
+                    filterOption={false}
+                    onSearch={handleSearch}
+                    notFoundContent={searching ? <Spin size="small" /> : null}
+                    optionFilterProp="children"
+                  >
+                    {recipientOptions.map(user => (
+                      <Option key={user.id} value={user.id}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Avatar
+                            src={user.avatar}
+                            icon={<UserOutlined />}
+                            size="small"
+                            style={{ marginRight: '8px' }}
+                          />
+                          <div>
+                            <div>{user.name}</div>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>{user.email}</Text>
+                          </div>
+                        </div>
+                      </Option>
+                    ))}
+                  </Select>
+                )}
+              />
+            </Form.Item>
+
+            {/* Campo Descrição (Opcional) */}
+            <Form.Item
+              label="Descrição (Opcional)"
+              validateStatus={errors.description ? "error" : ""}
+              help={errors.description?.message}
+            >
+              <Controller
+                name="description"
+                control={control}
+                render={({ field }) => (
+                  <Input.TextArea
+                    {...field}
+                    rows={3}
+                    placeholder="Ex: Pagamento pelo serviço prestado"
+                    maxLength={100}
+                    showCount
+                  />
+                )}
+              />
+            </Form.Item>
+
+            <Form.Item style={{ marginTop: 32 }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                size="large"
+                loading={isSubmitting}
+                disabled={amount > currentBalance}
+              >
+                {isSubmitting ? 'Processando...' : 'Confirmar Transferência'}
+              </Button>
+            </Form.Item>
+          </Form>
+        )}
       </Card>
     </div>
   );

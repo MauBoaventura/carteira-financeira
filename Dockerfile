@@ -5,10 +5,13 @@ RUN corepack enable
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
+# Copia tudo de uma vez (evita erro do prisma generate)
+COPY . .
+
+# Instala dependências e executa postinstall (prisma generate)
 RUN pnpm install
 
-COPY . .
+# Build do Prisma já acontece aqui via postinstall
 RUN pnpm build
 
 # Etapa 2: Produção
@@ -18,20 +21,18 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Copia apenas o necessário
 COPY package.json pnpm-lock.yaml ./
 
-# Aprova dependências que precisam rodar scripts de instalação (ex: sharp)
-RUN pnpm pkg set scripts-allowed.sharp=true
-
-# Instala apenas dependências de produção, sem rodar scripts (ex: prepare)
+# Ignora scripts de prepare (ex: husky)
 ENV HUSKY=0
+
 RUN pnpm install --prod --ignore-scripts
 
-# Copia os arquivos de build
+# Copia os arquivos necessários para rodar a aplicação
 COPY --from=builder /app/.next .next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./ 
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./
 
 EXPOSE 3000
 
