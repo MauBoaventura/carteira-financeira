@@ -63,7 +63,7 @@ const Home = () => {
             expenses: dashboardResponse.data.lastMonthExpense,
           });
           setRecentTransactions(
-            transactionsResponse.data.map((transaction: any, index: number) => ({
+            transactionsResponse.data.map((transaction: { id: string; }, index: number) => ({
               ...transaction,
               key: transaction.id || index, 
             }))
