@@ -13,7 +13,6 @@ const { Title, Text } = Typography;
 const { confirm } = Modal;
 const { RangePicker } = DatePicker;
 
-// Tipos e mocks - substituir por chamadas à API real
 type Operation = {
   id: string;
   type: 'DEPOSIT' | 'TRANSFER' | 'WITHDRAWAL';
@@ -60,11 +59,10 @@ const ReversalPage = () => {
       await performReversal(selectedOperationId);
       setModalVisible(false);
       setSelectedOperationId(null);
-      // mudar o status da operação na lista local
       setOperations(prev => prev.map(op =>
         op.id === selectedOperationId ? { ...op, status: 'REVERSED', reversible: false } : op
       ));
-      filterOperations(); // Reaplica os filtros
+      filterOperations();
     }
   };
 
@@ -94,7 +92,6 @@ const ReversalPage = () => {
 
   useEffect(() => {
     if (!operations.length) return;
-    // Simula carregamento de dados
     setLoading(true);
     setTimeout(() => {
       filterOperations();
@@ -107,7 +104,6 @@ const ReversalPage = () => {
   const filterOperations = () => {
     let result = [...operations];
     
-    // Filtro por data
     if (searchParams.dateRange) {
       const [start, end] = searchParams.dateRange;
       result = result.filter(op => 
@@ -116,7 +112,6 @@ const ReversalPage = () => {
       );
     }
     
-    // Filtro por texto (ID, contraparte ou descrição)
     if (searchParams.searchText) {
       const searchText = searchParams.searchText.toLowerCase();
       result = result.filter(op => 
@@ -132,16 +127,14 @@ const ReversalPage = () => {
   const performReversal = async (operationId: string) => {
     setLoading(true);
     try {
-      // Chama o serviço para reverter a operação
       await ReverseService.reverseById(operationId);
 
-      // Atualiza o status na lista local com base na resposta da API
       setOperations(prev => prev.map(op => 
         op.id === operationId ? { ...op, status: 'REVERSED', reversible: false } : op
       ));
 
       toast.success('Operação revertida com sucesso!');
-      filterOperations(); // Reaplica os filtros
+      filterOperations(); 
     } catch (error) {
       console.error('Erro ao reverter operação:', error);
       toast.error('Falha ao reverter operação');

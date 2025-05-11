@@ -1,12 +1,11 @@
 import { MenuProps } from "antd";
 
-// Representa cada item no menu
 export interface IMenuItem {
     key: string;
-    icon?: string; // Opcional, pois nem todos os itens possuem um ícone
+    icon?: string; 
     label: string;
-    path?: string; // Opcional, pois nem todos os itens possuem um caminho
-    children?: IMenuItem[]; // Itens filhos, caso existam
+    path?: string;
+    children?: IMenuItem[]; 
   }
 
 export interface IApiResponse {

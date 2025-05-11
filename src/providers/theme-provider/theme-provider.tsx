@@ -1,4 +1,3 @@
-// theme-provider.tsx
 "use client";
 
 import * as React from "react";
@@ -17,7 +16,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 }
 
 function AntDesignThemeWrapper({ children }: { children: React.ReactNode }) {
-  const { resolvedTheme } = useTheme(); // Obtém o tema atual ("light" ou "dark")
+  const { resolvedTheme } = useTheme(); 
 
   return (
     <ConfigProvider

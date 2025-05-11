@@ -38,7 +38,7 @@ const registerFormSchema = z
   })
   .refine((data) => data.password === data.passwordConfirmation, {
     message: "As senhas não coincidem",
-    path: ["passwordConfirmation"], // o erro vai aparecer no campo correto
+    path: ["passwordConfirmation"],
   });
 
 
@@ -81,7 +81,6 @@ export const RegisterForm = () => {
       let errorMessage = "Ocorreu um erro inesperado";
 
       if (err instanceof AxiosError) {
-        // Agora TypeScript sabe que err é do tipo AxiosError
         errorMessage = err.response?.data?.error || err.message || errorMessage;
       } else if (err instanceof Error) {
         errorMessage = err.message;

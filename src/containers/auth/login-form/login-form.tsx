@@ -57,7 +57,6 @@ export const LoginForm = () => {
       let errorMessage = "Ocorreu um erro inesperado";
 
       if (err instanceof AxiosError) {
-        // Agora TypeScript sabe que err é do tipo AxiosError
         errorMessage = err.response?.data?.error || err.message || errorMessage;
       } else if (err instanceof Error) {
         errorMessage = err.message;

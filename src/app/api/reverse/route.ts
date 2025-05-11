@@ -55,7 +55,6 @@ export async function GET(req: Request) {
 
     const resolvedData = await Promise.all(combinedData);
 
-    // Ordena os dados em ordem decrescente com base na data
     resolvedData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return NextResponse.json(resolvedData, { status: 200 });

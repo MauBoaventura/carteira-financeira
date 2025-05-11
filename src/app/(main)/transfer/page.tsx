@@ -22,7 +22,6 @@ type User = {
   avatar?: string | null;
 };
 
-// Schema de validação com Zod
 const transferSchema = z.object({
   amount: z.number({
     required_error: "Valor é obrigatório",
@@ -35,12 +34,11 @@ const transferSchema = z.object({
 
 type TransferFormData = z.infer<typeof transferSchema>;
 
-const mockBalance = 1500.00; // Saldo mockado - substitua por chamada à API
 
 const TransferPage = () => {
   const [searching, setSearching] = React.useState(false);
   const [recipientOptions, setRecipientOptions] = React.useState<User[]>([]);
-  const [currentBalance, setCurrentBalance] = React.useState(mockBalance);
+  const [currentBalance, setCurrentBalance] = React.useState(0);
   const [loadingBalance, setLoadingBalance] = React.useState(true);
   const [loadingRecipients, setLoadingRecipients] = React.useState(true);
 
@@ -92,7 +90,6 @@ const TransferPage = () => {
 
   const handleSearch = (value: string) => {
     setSearching(true);
-    // Simula busca na API
     setTimeout(() => {
       const filtered = recipientOptions.filter(user =>
         user.name.toLowerCase().includes(value.toLowerCase()) ||
@@ -110,7 +107,6 @@ const TransferPage = () => {
         recipientId: data.recipient,
         description: data.description,
       });
-      // Atualiza o saldo local após a transferência
       setCurrentBalance(prev => prev - data.amount);
       toast.success("Transferência realizada com sucesso!", {
         description: `Transferência de R$ ${response.data.amount.toFixed(2)} realizada com sucesso!`,

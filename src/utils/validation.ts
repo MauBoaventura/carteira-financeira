@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Define a schema for the deposit form validation
 export const depositSchema = z.object({
   amount: z
     .number()
@@ -17,5 +16,4 @@ export const depositSchema = z.object({
     }),
 });
 
-// Type for the validated data
 export type DepositFormData = z.infer<typeof depositSchema>;

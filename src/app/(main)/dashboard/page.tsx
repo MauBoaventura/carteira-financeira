@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { Card, Statistic, Typography, Space, Skeleton } from 'antd';
+import { Card, Statistic, Typography, Space, Skeleton, Table } from 'antd';
 import {
   ArrowUpOutlined,
   ArrowDownOutlined
@@ -15,20 +15,59 @@ const Home = () => {
     income: 0,
     expenses: 0,
   });
+  const [recentTransactions, setRecentTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const columns = [
+    {
+      title: 'Data',
+      dataIndex: 'date',
+      key: 'date',
+    },
+    {
+      title: 'Descrição',
+      dataIndex: 'description',
+      key: 'description',
+    },
+    {
+      title: 'Valor (R$)',
+      dataIndex: 'amount',
+      key: 'amount',
+      render: (value: number) => (
+        <span style={{ color: value < 0 ? '#cf1322' : '#3f8600' }}>
+          {value.toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      title: 'Tipo',
+      dataIndex: 'type',
+      key: 'type',
+    },
+  ];
+
   useEffect(() => {
-    let isMounted = true; // Evitar múltiplas requisições
+    let isMounted = true;
 
     const fetchDashboardData = async () => {
       try {
-        const response = await DashboardService.dashboard();
+        const [dashboardResponse, transactionsResponse] = await Promise.all([
+          DashboardService.dashboard(),
+          DashboardService.getRecentTransactions(),
+        ]);
+
         if (isMounted) {
           setDashboardData({
-            balance: response.data.balance,
-            income: response.data.monthlyIncome,
-            expenses: response.data.lastMonthExpense,
+            balance: dashboardResponse.data.balance,
+            income: dashboardResponse.data.monthlyIncome,
+            expenses: dashboardResponse.data.lastMonthExpense,
           });
+          setRecentTransactions(
+            transactionsResponse.data.map((transaction: any, index: number) => ({
+              ...transaction,
+              key: transaction.id || index, 
+            }))
+          );
           setLoading(false);
         }
       } catch (error) {
@@ -49,20 +88,20 @@ const Home = () => {
       <Title level={3}>Resumo Financeiro</Title>
 
       {loading ? (
-        <Space size="large" className="mt-6">
-          <Card style={{ width: 300 }}>
+        <Space size="large" className="flex flex-wrap mt-6">
+            <Card className="min-w-sm">
+            <Skeleton active paragraph={{ rows: 1 }} />
+            </Card>
+          <Card className="min-w-sm">
             <Skeleton active paragraph={{ rows: 1 }} />
           </Card>
-          <Card style={{ width: 300 }}>
-            <Skeleton active paragraph={{ rows: 1 }} />
-          </Card>
-          <Card style={{ width: 300 }}>
+          <Card className="min-w-sm">
             <Skeleton active paragraph={{ rows: 1 }} />
           </Card>
         </Space>
       ) : (
-        <Space size="large" className="mt-6">
-          <Card style={{ width: 300 }}>
+        <Space size="large" className="flex flex-wrap mt-6">
+          <Card className="min-w-sm">
             <Statistic
               title="Saldo Disponível"
               value={dashboardData.balance}
@@ -72,7 +111,7 @@ const Home = () => {
             />
           </Card>
 
-          <Card style={{ width: 300 }}>
+          <Card className="min-w-sm">
             <Statistic
               title="Receitas (Mês)"
               value={dashboardData.income}
@@ -82,7 +121,7 @@ const Home = () => {
             />
           </Card>
 
-          <Card style={{ width: 300 }}>
+          <Card className="min-w-sm">
             <Statistic
               title="Despesas (Mês)"
               value={dashboardData.expenses}
@@ -98,7 +137,16 @@ const Home = () => {
         <Title level={4}>Atividades Recentes</Title>
         <Text type="secondary">Aqui estão suas últimas transações</Text>
 
-        {/* Aqui você pode adicionar uma tabela de transações recentes */}
+        {loading ? (
+          <Skeleton active paragraph={{ rows: 4 }} />
+        ) : (
+          <Table
+            dataSource={recentTransactions}
+            columns={columns}
+            pagination={false}
+            className="mt-4"
+          />
+        )}
       </div>
     </div>
   );

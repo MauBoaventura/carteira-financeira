@@ -14,4 +14,8 @@ export class DashboardService {
     const url = `${baseUrlDashboard}?type=${type}`;
     return axiosApi.get(url);
   }
+  static async getRecentTransactions() {
+    const url = `${baseUrlDashboard}?type=recent-transactions`;
+    return axiosApi.get(url);
+  }
 }

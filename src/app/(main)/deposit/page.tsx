@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-// Schema de validação com Zod
 const depositSchema = z.object({
   amount: z.number({
     required_error: "Valor é obrigatório",
@@ -54,7 +53,6 @@ const DepositPage = () => {
       let errorMessage = "Ocorreu um erro inesperado";
       console.error(err);
       if (err instanceof AxiosError) {
-        // Agora TypeScript sabe que err é do tipo AxiosError
         errorMessage = err.response?.data?.error || err.message || errorMessage;
       } else if (err instanceof Error) {
         errorMessage = err.message;

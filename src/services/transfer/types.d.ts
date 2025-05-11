@@ -14,7 +14,7 @@ export interface TranferResponse {
   reversed: boolean;
 }
 
-export type AccountType = 'SAVINGS' | 'CHECKING'; // Replace with actual enum values if available
+export type AccountType = 'SAVINGS' | 'CHECKING'; 
 
 export interface Reversal {
   id: string;

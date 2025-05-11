@@ -10,7 +10,7 @@ export const axiosApi = axios.create({
 
 axiosApi.interceptors.request.use(
   (config) => {
-    const token = Cookies.get("token"); // Substitua "token" pelo nome real da sua chave no cookie
+    const token = Cookies.get("token"); 
 
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;

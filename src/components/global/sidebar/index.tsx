@@ -23,7 +23,6 @@ import { useDeviceType } from '@/providers/device-type-provider/device-type-prov
 
 export type MenuItem = Required<MenuProps>['items'][number];
 
-// Mapeamento de ícones
 export const iconMap: Record<string, React.ReactNode> = {
   HomeOutlined: <HomeOutlined />,
   TransactionOutlined: <TransactionOutlined />,
@@ -37,7 +36,6 @@ const SideBar = () => {
   const [items, setItems] = useState<MenuItem[]>([])
   const { theme } = useTheme()
   const { collapsedSidebar, setCollapsedSidebar } = useConfiguracao();
-  // Função para criar links ou rótulos
   const createLabel = (label: string, path?: string) => {
     if (path) {
       if (path.startsWith('http')) {

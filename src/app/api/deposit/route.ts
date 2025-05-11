@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     }
 
     const token = authHeader.split(" ")[1];
-    const userId = await verifyToken(token); // Função para verificar e extrair o ID do usuário do token
+    const userId = await verifyToken(token);
 
     if (!userId) {
       return NextResponse.json({ error: "Token inválido" }, { status: 401 });

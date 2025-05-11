@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   }
 
   const token = authHeader.split(" ")[1];
-  const userId = await verifyToken(token); // Função para verificar e extrair o ID do usuário do token
+  const userId = await verifyToken(token);
   if (!userId) {
     return NextResponse.json({ error: "Token inválido" }, { status: 401 });
   }
@@ -60,6 +60,70 @@ export async function GET(request: NextRequest) {
     } catch (error) {
       return NextResponse.json(
         { error: "Erro ao buscar dados do banco" },
+        { status: 500 }
+      );
+    }
+  } else if (type === "recent-transactions") {
+    try {
+      const [transfers, deposits] = await Promise.all([
+        prisma.transfer.findMany({
+          where: {
+            OR: [
+              { senderId: userId },
+              { recipientId: userId }
+            ],
+          },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          select: {
+            id: true,
+            createdAt: true,
+            description: true,
+            amount: true,
+            senderId: true,
+            recipientId: true,
+          },
+        }),
+        prisma.deposit.findMany({
+          where: {
+            userId,
+            reversed: false,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          select: {
+            id: true,
+            createdAt: true,
+            amount: true,
+            bank: true,
+          },
+        }),
+      ]);
+
+      const formattedTransfers = transfers.map((transaction) => ({
+        id: transaction.id,
+        date: transaction.createdAt.toISOString().split("T")[0],
+        description: transaction.description || "",
+        amount: transaction.senderId === userId ? -transaction.amount : transaction.amount,
+        type: transaction.senderId === userId ? "Despesa" : "Receita",
+      }));
+
+      const formattedDeposits = deposits.map((deposit) => ({
+        id: deposit.id,
+        date: deposit.createdAt.toISOString().split("T")[0],
+        description: `Depósito - ${deposit.bank}`,
+        amount: deposit.amount,
+        type: "Receita",
+      }));
+
+      const allTransactions = [...formattedTransfers, ...formattedDeposits]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 10);
+
+      return NextResponse.json(allTransactions);
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Erro ao buscar transações recentes" },
         { status: 500 }
       );
     }

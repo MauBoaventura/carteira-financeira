@@ -8,7 +8,6 @@ const routeMap: Record<string, string> = {
     'alunos': 'Gerenciar Alunos',
     'professores': 'Gerenciar Professores',
     'favoritos': 'Meus Favoritos',
-    // Adicione mais mapeamentos conforme necessário
 };
 
 function generateBreadcrumbs(pathname: string) {

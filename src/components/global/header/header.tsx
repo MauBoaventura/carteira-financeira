@@ -29,7 +29,6 @@ export const Header = ({ modules }: Props) => {
 
 
 
-  // Atualizando o mapeamento de títulos para retornar o nome salvo como valor
   const titles: Record<UserRoles, string> = {
     [UserRoles.DASHBOARD]: 'Dashboard',
     [UserRoles.DEPOSIT]: 'Depósito',

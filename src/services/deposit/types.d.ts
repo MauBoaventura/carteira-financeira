@@ -6,7 +6,7 @@ export interface DepositProps {
   reference?: string;
 }
 
-export type AccountType = 'SAVINGS' | 'CHECKING'; // Replace with actual enum values if available
+export type AccountType = 'SAVINGS' | 'CHECKING'; 
 
 export interface Reversal {
   id: string;

@@ -30,7 +30,8 @@ export default function RoleLayout({
       <SideBar />
       <Content
         style={{
-          marginTop: "64px", // Compensa o header fixo
+          marginTop: "64px",
+          
           minHeight: "calc(100vh - 64px)",
           overflow: "auto",
         }}

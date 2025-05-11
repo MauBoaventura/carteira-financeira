@@ -1,4 +1,3 @@
-// providers.tsx
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "./theme-provider/theme-provider";
 import { AntdRegistry } from "@ant-design/nextjs-registry";

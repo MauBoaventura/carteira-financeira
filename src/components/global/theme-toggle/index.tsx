@@ -1,4 +1,3 @@
-// components/ThemeToggle.tsx
 "use client";
 
 import { MoonFilled, SunFilled } from '@ant-design/icons';
@@ -10,7 +9,6 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Evite hidratação inconsistente no SSR
   useEffect(() => setMounted(true), []);
 
   if (!mounted) return null;

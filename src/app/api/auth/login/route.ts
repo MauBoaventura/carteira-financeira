@@ -16,7 +16,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  const { password: p, ...userWithoutPassword } = user; // Remove a senha do objeto user antes de retornar
+  const { password: p, ...userWithoutPassword } = user; 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     return NextResponse.json(
