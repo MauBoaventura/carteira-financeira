@@ -42,12 +42,8 @@ export async function GET(request: NextRequest) {
           senderId: userId,
           reversed: false,
           createdAt: {
-            gte: new Date(
-              new Date().getFullYear(),
-              new Date().getMonth() - 1,
-              1
-            ),
-            lt: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 dias atrás
+            lt: new Date(), // agora
           },
         },
       });
@@ -68,10 +64,7 @@ export async function GET(request: NextRequest) {
       const [transfers, deposits] = await Promise.all([
         prisma.transfer.findMany({
           where: {
-            OR: [
-              { senderId: userId },
-              { recipientId: userId }
-            ],
+            OR: [{ senderId: userId }, { recipientId: userId }],
           },
           orderBy: { createdAt: "desc" },
           take: 10,
@@ -104,7 +97,10 @@ export async function GET(request: NextRequest) {
         id: transaction.id,
         date: transaction.createdAt.toISOString().split("T")[0],
         description: transaction.description || "",
-        amount: transaction.senderId === userId ? -transaction.amount : transaction.amount,
+        amount:
+          transaction.senderId === userId
+            ? -transaction.amount
+            : transaction.amount,
         type: transaction.senderId === userId ? "Despesa" : "Receita",
       }));
 

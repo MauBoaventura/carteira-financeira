@@ -62,12 +62,13 @@ const Home = () => {
             income: dashboardResponse.data.monthlyIncome,
             expenses: dashboardResponse.data.lastMonthExpense,
           });
-          setRecentTransactions(
-            transactionsResponse.data.map((transaction: { id: string; }, index: number) => ({
+            setRecentTransactions(
+            transactionsResponse.data.map((transaction: { id: string; date: string; }, index: number) => ({
               ...transaction,
-              key: transaction.id || index, 
+              date: transaction.date.split('-').reverse().join('/'), // Adjust date format
+              key: transaction.id || index,
             }))
-          );
+            );
           setLoading(false);
         }
       } catch (error) {

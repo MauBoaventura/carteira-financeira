@@ -1,5 +1,5 @@
 'use client'
-import React from 'react';
+import React, { useState } from 'react';
 import { Form, Input, Button, Card, Typography, Select, message } from 'antd';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,6 +29,7 @@ type DepositFormData = z.infer<typeof depositSchema>;
 
 const DepositPage = () => {
   const { userRole } = useLocation();
+  const [loading, setLoading] = useState(false);
 
   const {
     control,
@@ -43,6 +44,7 @@ const DepositPage = () => {
   });
 
   const onSubmit = async (data: DepositFormData) => {
+    setLoading(true);
     try {
       const response = await DepositService.deposit(data);
       toast.success("Depósito realizado com sucesso!", {
@@ -61,6 +63,8 @@ const DepositPage = () => {
       toast.error("Erro inesperado", {
         description: errorMessage,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -156,7 +160,13 @@ const DepositPage = () => {
           </Form.Item>
 
           <Form.Item style={{ marginTop: 32 }}>
-            <Button type="primary" htmlType="submit" block size="large">
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              size="large"
+              loading={loading}
+            >
               Confirmar Depósito
             </Button>
           </Form.Item>
