@@ -17,6 +17,13 @@ export async function POST(
     });
 
     if (deposit) {
+      if (deposit.reversed) {
+        return NextResponse.json(
+          { error: "Depósito já foi revertido" },
+          { status: 400 }
+        );
+      }
+
       const user = await prisma.user.findUnique({
         where: { id: deposit.userId },
       });
@@ -46,6 +53,13 @@ export async function POST(
     });
 
     if (transfer) {
+      if (transfer.reversed) {
+        return NextResponse.json(
+          { error: "Transferência já foi revertida" },
+          { status: 400 }
+        );
+      }
+
       const sender = await prisma.user.findUnique({
         where: { id: transfer.senderId },
       });

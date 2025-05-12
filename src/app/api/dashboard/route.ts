@@ -65,6 +65,7 @@ export async function GET(request: NextRequest) {
         prisma.transfer.findMany({
           where: {
             OR: [{ senderId: userId }, { recipientId: userId }],
+            reversed: false,
           },
           orderBy: { createdAt: "desc" },
           take: 10,

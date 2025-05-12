@@ -1,11 +1,11 @@
 'use client'
 import React, { useMemo } from 'react';
-import { Form, Input, Button, Card, Typography, Select, message, Spin, Avatar, Skeleton } from 'antd';
+import { Form, Input, Button, Card, Typography, Select, message, Spin, Avatar, Skeleton, Space, Tag } from 'antd';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { useLocation } from '@/hooks/use-location';
-import { SearchOutlined, UserOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, PhoneOutlined } from '@ant-design/icons';
 import { toast } from 'sonner';
 import { AxiosError } from 'axios';
 import { TransferService } from '@/services/transfer';
@@ -19,6 +19,7 @@ type User = {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   avatar?: string | null;
 };
 
@@ -41,13 +42,15 @@ const TransferPage = () => {
   const [currentBalance, setCurrentBalance] = React.useState(0);
   const [loadingBalance, setLoadingBalance] = React.useState(true);
   const [loadingRecipients, setLoadingRecipients] = React.useState(true);
+  const [selectedRecipient, setSelectedRecipient] = React.useState<User | null>(null);
 
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
     watch,
-    reset
+    reset,
+    setValue
   } = useForm<TransferFormData>({
     resolver: zodResolver(transferSchema)
   });
@@ -88,18 +91,6 @@ const TransferPage = () => {
     fetchBalance();
   }, []);
 
-  const handleSearch = (value: string) => {
-    setSearching(true);
-    setTimeout(() => {
-      const filtered = recipientOptions.filter(user =>
-        user.name.toLowerCase().includes(value.toLowerCase()) ||
-        user.email.toLowerCase().includes(value.toLowerCase())
-      );
-      setRecipientOptions(filtered);
-      setSearching(false);
-    }, 500);
-  };
-
   const onSubmit = async (data: TransferFormData) => {
     try {
       const response = await TransferService.tranfer({
@@ -112,6 +103,7 @@ const TransferPage = () => {
         description: `Transferência de R$ ${response.data.amount.toFixed(2)} realizada com sucesso!`,
       });
       reset();
+      setSelectedRecipient(null);
     } catch (err) {
       let errorMessage = "Ocorreu um erro inesperado";
       console.error(err);
@@ -178,43 +170,51 @@ const TransferPage = () => {
             {/* Campo Destinatário */}
             <Form.Item
               label="Destinatário"
+              name="recipient"
+              rules={[{ required: true, message: 'Selecione um destinatário' }]}
               validateStatus={errors.recipient ? "error" : ""}
               help={errors.recipient?.message}
             >
-              <Controller
-                name="recipient"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    showSearch
-                    placeholder="Busque por nome ou email"
-                    defaultActiveFirstOption={false}
-                    filterOption={false}
-                    onSearch={handleSearch}
-                    notFoundContent={searching ? <Spin size="small" /> : null}
-                    optionFilterProp="children"
-                  >
-                    {recipientOptions.map(user => (
-                      <Option key={user.id} value={user.id}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar
-                            src={user.avatar}
-                            icon={<UserOutlined />}
-                            size="small"
-                            style={{ marginRight: '8px' }}
-                          />
-                          <div>
-                            <div>{user.name}</div>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>{user.email}</Text>
-                          </div>
-                        </div>
-                      </Option>
-                    ))}
-                  </Select>
-                )}
+              <Select
+                showSearch
+                placeholder="Digite para buscar destinatário"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (String(option?.label) ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+                onChange={(value) => {
+                  const recipient = recipientOptions.find(c => c.id === value);
+                  setSelectedRecipient(recipient || null);
+                  setValue('recipient', value);
+                }}
+                options={recipientOptions.map(user => ({
+                  value: user.id,
+                  label: (
+                    <Space>
+                      <Avatar size="small" src={user.avatar} icon={<UserOutlined />} />
+                      <span>{user.name}</span>
+                      {user.phone && <Tag>{user.phone}</Tag>}
+                      <Tag>{user.email}</Tag>
+                    </Space>
+                  ),
+                }))}
               />
             </Form.Item>
+
+            {selectedRecipient && (
+              <div className="bg-muted p-4 rounded-lg mb-4">
+                <Space direction="vertical">
+                  <Space>
+                    <Avatar size="large" src={selectedRecipient.avatar} icon={<UserOutlined />} />
+                    <div>
+                      <h4>{selectedRecipient.name}</h4>
+                      {selectedRecipient.phone && <p><PhoneOutlined /> {selectedRecipient.phone}</p>}
+                      <p>{selectedRecipient.email}</p>
+                    </div>
+                  </Space>
+                </Space>
+              </div>
+            )}
 
             {/* Campo Descrição (Opcional) */}
             <Form.Item

@@ -8,9 +8,10 @@ import { ReverseResponse } from '@/services/reverse/types';
 import dayjs from 'dayjs';
 import { User } from '@prisma/client';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
+import { useBankStore } from '@/store/useWalletStore';
 
 const { Title, Text } = Typography;
-const { confirm } = Modal;
 const { RangePicker } = DatePicker;
 
 type Operation = {
@@ -47,28 +48,31 @@ const ReversalPage = () => {
   });
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
+  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(null);
+  const { updateBalance } = useBankStore()
 
-  const showModal = (operationId: string) => {
-    setSelectedOperationId(operationId);
+  const showModal = (operation: Operation) => {
+    setSelectedOperation(operation);
     setModalVisible(true);
   };
 
   const handleConfirmReversal = async () => {
-    if (selectedOperationId) {
-      await performReversal(selectedOperationId);
-      setModalVisible(false);
-      setSelectedOperationId(null);
-      setOperations(prev => prev.map(op =>
-        op.id === selectedOperationId ? { ...op, status: 'REVERSED', reversible: false } : op
-      ));
-      filterOperations();
+    if (selectedOperation) {
+      try {
+        await performReversal(selectedOperation.id);
+        setModalVisible(false);
+        setSelectedOperation(null);
+      } catch (error) {
+        console.error("Erro ao reverter operação:", error);
+        toast.error("Erro ao reverter operação");
+
+      }
     }
   };
 
   const handleCancelReversal = () => {
     setModalVisible(false);
-    setSelectedOperationId(null);
+    setSelectedOperation(null);
   };
 
   useEffect(() => {
@@ -120,7 +124,7 @@ const ReversalPage = () => {
         (op.description && op.description.toLowerCase().includes(searchText))
       );
     }
-    
+
     setFilteredOperations(result);
   };
 
@@ -128,31 +132,38 @@ const ReversalPage = () => {
     setLoading(true);
     try {
       await ReverseService.reverseById(operationId);
+      if (selectedOperation?.type === 'DEPOSIT') {
+        updateBalance(-selectedOperation.amount);
+      } else if (selectedOperation?.type === 'TRANSFER') {
+        updateBalance(selectedOperation.amount);
+      }
 
-      setOperations(prev => prev.map(op => 
+      setOperations(prev => prev.map(op =>
         op.id === operationId ? { ...op, status: 'REVERSED', reversible: false } : op
       ));
+      setFilteredOperations(prev => prev.map(op =>
+        op.id === operationId ? { ...op, status: 'REVERSED', reversible: false } : op
+      ));
+      toast.success("Operação revertida com sucesso", {
+        description: "A operação foi revertida com sucesso.",
+      });
 
-      toast.success('Operação revertida com sucesso!');
-      filterOperations(); 
-    } catch (error) {
-      console.error('Erro ao reverter operação:', error);
-      toast.error('Falha ao reverter operação');
+    } catch (err) {
+      let errorMessage = "Ocorreu um erro inesperado";
+      if (err instanceof AxiosError) {
+        errorMessage = err.response?.data?.error || err.message || errorMessage;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+
+      toast.error("Erro inesperado", {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReverseOperation = (operationId: string) => {
-    confirm({
-      title: 'Confirmar reversão',
-      icon: <ExclamationCircleOutlined />,
-      content: 'Tem certeza que deseja reverter esta operação? Esta ação não pode ser desfeita.',
-      okText: 'Confirmar',
-      cancelText: 'Cancelar',
-      onOk: () => performReversal(operationId),
-    });
-  };
 
   const columns = [
     {
@@ -214,7 +225,7 @@ const ReversalPage = () => {
           <Button
             type="link"
             icon={<UndoOutlined />}
-            onClick={() => showModal(record.id)}
+            onClick={() => showModal(record)}
             disabled={!record.reversible}
             title={record.reversible ? 'Reverter operação' : 'Operação não pode ser revertida'}
           >

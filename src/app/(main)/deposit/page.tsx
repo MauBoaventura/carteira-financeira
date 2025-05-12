@@ -8,6 +8,7 @@ import { useLocation } from '@/hooks/use-location';
 import { DepositService } from "@/services/deposit";
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
+import { useBankStore } from '@/store/useWalletStore';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -30,7 +31,7 @@ type DepositFormData = z.infer<typeof depositSchema>;
 const DepositPage = () => {
   const { userRole } = useLocation();
   const [loading, setLoading] = useState(false);
-
+  const { updateBalance } = useBankStore();
   const {
     control,
     handleSubmit,
@@ -47,6 +48,9 @@ const DepositPage = () => {
     setLoading(true);
     try {
       const response = await DepositService.deposit(data);
+      
+      updateBalance(response.data.deposit.amount)
+
       toast.success("Depósito realizado com sucesso!", {
         description: `Depósito de R$ ${response.data.deposit.amount.toFixed(2)} realizado com sucesso!`,
       });
