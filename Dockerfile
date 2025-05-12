@@ -26,13 +26,15 @@ COPY package.json pnpm-lock.yaml ./
 # Ignora scripts de prepare (ex: husky)
 ENV HUSKY=0
 
+# Instala dependências de produção, mas não executa postinstall
 RUN pnpm install --prod --ignore-scripts
 
-# Copia os arquivos necessários para rodar a aplicação
+# Copia artefatos da build
 COPY --from=builder /app/.next .next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules  
+COPY --from=builder /app/package.json ./              
 
 EXPOSE 3000
 
