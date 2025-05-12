@@ -11,7 +11,7 @@ export const Notifications = () => {
     >
       <Image
         className="dark:invert"
-        src="/assets/logo-atlas.svg"
+        src="/assets/logo-carteira.svg"
         alt="Next.js logo"
         width={50}
         height={38}

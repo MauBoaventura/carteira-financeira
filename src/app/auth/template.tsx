@@ -33,18 +33,26 @@ export default function Template({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-center">
             <Image
               className="block dark:hidden"
-              src="/assets/icon-atlas.svg"
+              src="/assets/logo-carteira.svg"
               width={222.83}
               height={35}
               alt="logo"
             />
-            <Image
-              className="hidden dark:block"
-              src="/assets/foxgreen-logo-dark.svg"
-              width={222.83}
-              height={35}
-              alt="company-logo"
-            />
+            <div className="hidden dark:block">
+              <div className="flex flex-row gap-2 leading-5 content-center self-center justify-center">
+                <Image
+                  src="/assets/icon-carteira.svg"
+                  alt="Next.js logo"
+                  width={60}
+                  height={38}
+                  priority
+                />
+                <div className="flex flex-col content-center self-center justify-center text-lg">
+                  <span className="text-gray-800 font-bold">Carteira</span>
+                  <span className="text-gray-800 font-bold">VirtuALL</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div
             className={
@@ -55,7 +63,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
-      <ThemeToggle/>
+      <ThemeToggle />
     </main>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useLocation } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { LogoutOutlined } from "@ant-design/icons";
 import { Avatar } from "antd";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -23,14 +24,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({ className = "" }) => {
         className
       )}
     >
-      <Image
-        className="dark:invert"
-        src="/next.svg"
-        alt="Next.js logo"
-        width={50}
-        height={38}
-        priority
-      />
+      <LogoutOutlined />
     </Avatar>
   );
 };

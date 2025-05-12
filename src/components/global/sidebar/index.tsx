@@ -161,9 +161,9 @@ const SideBar = () => {
           width={250}
           className={`${theme === 'dark' ? '!bg-[#001529]' : ''}`}
         >
-          <div className="p-4 flex items-center justify-center h-16 border-b">
+          <div className="p-4 flex items-center justify-center h-16 border-b ">
             <Image
-              src={'/assets/icon-atlas.svg'}
+              src="/assets/icon-carteira.svg"
               alt="Logo"
               width={64}
               height={64}
